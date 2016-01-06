@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# xwiebelbot. small script to help understand ticket links for #tails-dev
+# xwiebelbot. small script to explain ticket links for #tails-dev
 # loosely based on weasels ticketbot plugin for supybot
 # 
 # This program is free software: you can redistribute it and/or modify
@@ -96,6 +96,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
 if __name__ == '__main__':
 
     optp = OptionParser()
+    # --debug not in use
     optp.add_option('-d', '--debug', dest='debug', help='set logging to DEBUG')
     optp.add_option('-j', '--jid', dest='jid', help='JID to use')
     optp.add_option('-p', '--pass', dest='password', help='password to use')
