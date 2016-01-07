@@ -41,22 +41,21 @@ class MUCBot(sleekxmpp.ClientXMPP):
         self.add_event_handler("session_start", self.session_start)
         self.add_event_handler("groupchat_message", self.groupchat_message)
 
-    def log(self, message):
-        if self.debug is True:
-            print(message)
-
     def session_start(self,event):
         self.send_presence()
         self.plugin['xep_0045'].joinMUC(opts.channel, self.nick, wait=True)
 
     def groupchat_message(self, msg):
         if msg['mucnick'] != self.nick:
-            #self.log("message!")
+            logging.debug('Got a Groupchat Messsage.')
             self.parsemsg(msg)
 
     def parsemsg(self, msg):
+        logging.debug('Parsing Groupchat Message.')
         for key in self.parsearray.keys():
+            logging.info('Checking Groupchat Message for ' + key)
             for match in re.findall(self.parsearray[key]['re'], msg['body']):
+                logging.info('Found match for '+key+' in Groupchat message.')
                 url = self.parsearray[key]['url'] + match[1]
                 title = self.fixtitle(self.gettitlefromhtml(url))
                 self.send_message(mto=msg['from'].bare, mbody="%s %s %s %s" %(key, u"\u263A", title, url), mtype='groupchat')
@@ -82,12 +81,12 @@ class MUCBot(sleekxmpp.ClientXMPP):
 
     def addtourlcache(self, url, title):
         if url not in self.urlcache:
-            self.log(url + " not yet in urlcache")
+            logging.info(url + ' is not in urlcache yet.')
             self.checklength()
             self.urlcache[url] = {'title': title, 'timestamp': time.time() }
 
     def checklength(self):
-        self.log("checking length")
+        logging.debug('Checking the length of the urlcache dict.')
         if len(self.urlcache) >= self.cachesize:
             ts = time.time()
             for key in self.urlcache:
@@ -108,7 +107,6 @@ class MUCBot(sleekxmpp.ClientXMPP):
 if __name__ == '__main__':
 
     optp = OptionParser()
-    # --debug not in use
     optp.add_option('-q', '--quiet', help='set logging to ERROR', 
             action='store_const', dest='loglevel', 
             const=logging.ERROR, default=logging.INFO)
@@ -142,16 +140,16 @@ if __name__ == '__main__':
     xmpp.debug = False
     xmpp.parsearray = {
             'Tails': { 
-                're': r'(^#| #|[tT]ails#|https://labs.riseup.net/code/issues/)([0-9]{4,})', 
+                're': r'(^#| #|[tT]ails#|https://labs.riseup.net/code/issues/)([0-9]{3,5})', 
                 'url': 'https://labs.riseup.net/code/issues/' },
             'Debian': { 
-                're': '([dD]ebian#|https://bugs.debian.org/cgi-bin/bugreport.cgi\?bug=)([0-9]{6,})', 
+                're': '([dD]ebian#|https://bugs.debian.org/cgi-bin/bugreport.cgi\?bug=)([0-9]{3,6})', 
                 'url': 'https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=' },
             'Tor': {
-                're': '([tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})',
+                're': '([tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{3,5})',
                 'url': 'https://trac.torproject.org/projects/tor/ticket/' },
             'Mat': {
-                're': r'([mM]at#|https://labs.riseup.net/code/issues/)([0-9]{4,})', 
+                're': r'([mM]at#|https://labs.riseup.net/code/issues/)([0-9]{3,5})', 
                 'url': 'https://labs.riseup.net/code/issues/' },
             }
     xmpp.urlcache = {}
