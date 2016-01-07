@@ -53,7 +53,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
     def parsemsg(self, msg):
         logging.debug('Parsing Groupchat Message.')
         for key in self.parsearray.keys():
-            logging.info('Checking Groupchat Message for ' + key)
+            logging.debug('Checking Groupchat Message for ' + key)
             for match in re.findall(self.parsearray[key]['re'], msg['body']):
                 logging.info('Found match for '+key+' in Groupchat message.')
                 url = self.parsearray[key]['url'] + match[1]
