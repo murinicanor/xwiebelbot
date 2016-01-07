@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ###
 
+import sys
 import sleekxmpp
 import re
 import BeautifulSoup
@@ -23,6 +24,13 @@ import urllib2
 import time
 import getpass
 from optparse import OptionParser
+import logging
+
+if sys.version_info < (3, 0):
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+else:
+    raw_input = input
 
 class MUCBot(sleekxmpp.ClientXMPP):
 
@@ -38,6 +46,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
             print(message)
 
     def session_start(self,event):
+        self.send_presence()
         self.plugin['xep_0045'].joinMUC(opts.channel, self.nick, wait=True)
 
     def groupchat_message(self, msg):
@@ -100,7 +109,16 @@ if __name__ == '__main__':
 
     optp = OptionParser()
     # --debug not in use
-    optp.add_option('-d', '--debug', dest='debug', help='set logging to DEBUG')
+    optp.add_option('-q', '--quiet', help='set logging to ERROR', 
+            action='store_const', dest='loglevel', 
+            const=logging.ERROR, default=logging.INFO)
+    optp.add_option('-d', '--debug', help='set logging to DEBUG', 
+            action='store_const', dest='loglevel',
+            const=logging.DEBUG, default=logging.INFO)
+    optp.add_option('-v', '--verbose', help='set logging to COMM', 
+            action='store_const', dest='loglevel', 
+            const=5, default=logging.INFO)
+
     optp.add_option('-j', '--jid', dest='jid', help='JID to use')
     optp.add_option('-p', '--pass', dest='password', help='password to use')
     optp.add_option('-c', '--channel', dest='channel', help='Channel to join')
@@ -118,7 +136,9 @@ if __name__ == '__main__':
 
     xmpp = MUCBot(opts.jid, opts.password, opts.channel, opts.nick)
     xmpp.use_signals(signals=["SIGHUP", "SIGTERM", "SIGINT"])
-    xmpp.register_plugin('xep_0045') # group chat
+    xmpp.register_plugin('xep_0030') # Service Discovery
+    xmpp.register_plugin('xep_0045') # Multi-User Chat
+    xmpp.register_plugin('xep_0199') # XMPP Ping
     xmpp.debug = False
     xmpp.parsearray = {
             'Tails': { 
@@ -136,6 +156,8 @@ if __name__ == '__main__':
             }
     xmpp.urlcache = {}
     xmpp.cachesize = 50
+    logging.basicConfig(level=opts.loglevel, 
+            format='%(levelname)-8s %(message)s')
 
     if xmpp.connect():
         xmpp.process(block=True)
