@@ -50,7 +50,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
             for match in re.findall(self.parsearray[key]['re'], msg['body']):
                 url = self.parsearray[key]['url'] + match[1]
                 title = self.fixtitle(self.gettitlefromhtml(url))
-                self.send_message(mto=msg['from'].bare, mbody="%s %s %s %s" %(key, u"\u2764", title, url), mtype='groupchat')
+                self.send_message(mto=msg['from'].bare, mbody="%s %s %s %s" %(key, u"\u263A", title, url), mtype='groupchat')
 
     def gettitlefromhtml(self, url):
         if url in self.urlcache:
@@ -88,8 +88,11 @@ class MUCBot(sleekxmpp.ClientXMPP):
             self.urlcache.pop(remkey)
 
     def fixtitle(self, title):
+        #title = title.replace("\n", "")
+        title = re.sub( '\s+', ' ', title ).strip()
         title = title.replace(" - Tails - RiseupLabs Code Repository", "")
         title = title.replace("- Debian Bug report logs", "")
+        title = title.replace(" Tor Bug Tracker & Wiki ", "")
         return title
 
 
@@ -116,11 +119,17 @@ if __name__ == '__main__':
     xmpp.debug = False
     xmpp.parsearray = {
             'Tails': { 
-                're': r'([tT]ails#|https://labs.riseup.net/code/issues/)([0-9]{4,})', 
+                're': r'(^#| #|[tT]ails#|https://labs.riseup.net/code/issues/)([0-9]{4,})', 
                 'url': 'https://labs.riseup.net/code/issues/' },
             'Debian': { 
                 're': '([dD]ebian#|https://bugs.debian.org/cgi-bin/bugreport.cgi\?bug=)([0-9]{6,})', 
-                'url': 'https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=' }
+                'url': 'https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=' },
+            'Tor': {
+                're': '([tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{4,})',
+                'url': 'https://trac.torproject.org/projects/tor/ticket/' },
+            'Mat': {
+                're': r'([mM]at#|https://labs.riseup.net/code/issues/)([0-9]{4,})', 
+                'url': 'https://labs.riseup.net/code/issues/' },
             }
     xmpp.urlcache = {}
     xmpp.cachesize = 50
