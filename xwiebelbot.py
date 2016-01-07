@@ -30,17 +30,17 @@ class MUCBot(sleekxmpp.ClientXMPP):
         sleekxmpp.ClientXMPP.__init__(self, jid, password)
         self.nick = nick
 
-        self.add_event_handler("session_start", self.start)
-        self.add_event_handler("groupchat_message", self.muc_message)
+        self.add_event_handler("session_start", self.session_start)
+        self.add_event_handler("groupchat_message", self.groupchat_message)
 
     def log(self, message):
         if self.debug is True:
             print(message)
 
-    def start(self,event):
+    def session_start(self,event):
         self.plugin['xep_0045'].joinMUC(opts.channel, self.nick, wait=True)
 
-    def muc_message(self, msg):
+    def groupchat_message(self, msg):
         if msg['mucnick'] != self.nick:
             #self.log("message!")
             self.parsemsg(msg)
