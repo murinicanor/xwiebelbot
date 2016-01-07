@@ -26,9 +26,9 @@ from optparse import OptionParser
 
 class MUCBot(sleekxmpp.ClientXMPP):
 
-    def __init__(self, jid, password, room):
+    def __init__(self, jid, password, room, nick):
         sleekxmpp.ClientXMPP.__init__(self, jid, password)
-        self.nick, self.domain = str(jid).split('@')
+        self.nick = nick
 
         self.add_event_handler("session_start", self.start)
         self.add_event_handler("groupchat_message", self.muc_message)
@@ -104,6 +104,7 @@ if __name__ == '__main__':
     optp.add_option('-j', '--jid', dest='jid', help='JID to use')
     optp.add_option('-p', '--pass', dest='password', help='password to use')
     optp.add_option('-c', '--channel', dest='channel', help='Channel to join')
+    optp.add_option('-n', '--nick', dest='nick', help='Nickname to use')
 
     opts, args = optp.parse_args()
     if opts.jid is None:
@@ -112,8 +113,10 @@ if __name__ == '__main__':
         opts.password = getpass.getpass("Password: ")
     if opts.channel is None:
         opts.channel = raw_input("Channel: ")
+    if opts.nick is None:
+        opts.nick = raw_input("Nick: ")
 
-    xmpp = MUCBot(opts.jid, opts.password, opts.channel)
+    xmpp = MUCBot(opts.jid, opts.password, opts.channel, opts.nick)
     xmpp.use_signals(signals=["SIGHUP", "SIGTERM", "SIGINT"])
     xmpp.register_plugin('xep_0045') # group chat
     xmpp.debug = False
