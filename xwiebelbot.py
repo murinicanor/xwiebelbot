@@ -155,7 +155,10 @@ if __name__ == '__main__':
     xmpp.urlcache = {}
     xmpp.cachesize = 50
     logging.basicConfig(level=opts.loglevel, 
-            format='%(levelname)-8s %(message)s')
+            format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+            datefmt='%m-%d %H:%M',
+            filename='xwiebelbot.log',
+            filemode='w')
 
     if xmpp.connect():
         xmpp.process(block=True)
