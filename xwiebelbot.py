@@ -149,7 +149,7 @@ if __name__ == '__main__':
                 're': '([tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{3,5})',
                 'url': 'https://trac.torproject.org/projects/tor/ticket/' },
             'Mat': {
-                're': r'([mM]at#|https://labs.riseup.net/code/issues/)([0-9]{3,5})', 
+                're': r'([mM]at#)([0-9]{3,5})', 
                 'url': 'https://labs.riseup.net/code/issues/' },
             }
     xmpp.urlcache = {}
