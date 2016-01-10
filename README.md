@@ -1,1 +1,5 @@
 # xwiebelbot
+
+# TODO
+
+deduplication
