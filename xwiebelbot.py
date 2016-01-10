@@ -57,12 +57,19 @@ class MUCBot(sleekxmpp.ClientXMPP):
             for match in re.findall(self.parsearray[key]['re'], msg['body']):
                 logging.info('Found match for '+key+' in Groupchat message.')
                 url = self.parsearray[key]['url'] + match[1]
-                title = self.fixtitle(self.gettitlefromhtml(url))
-                self.send_message(mto=msg['from'].bare, mbody="%s %s %s %s" %(key, u"\u263A", title, url), mtype='groupchat')
+                if url in self.urlcache:
+                    logging.debug('URL is in cache')
+                    if self.urlcache[url]['timestamp'] + self.deduptime < time.time():
+                        logging.debug('URL timestamp %f is less than %f - %f', self.urlcache[url]['timestamp'], time.time(), self.deduptime)
+                        title = self.urlcache[url]['title']
+                        self.urlcache[url]['timestamp'] = time.time()
+                        self.send_message(mto=msg['from'].bare, mbody="%s %s %s %s" %(key, u"\u263A", title, url), mtype='groupchat')
+                else:
+                    logging.debug('URL not yet in cache')
+                    title = self.fixtitle(self.gettitlefromhtml(url))
+                    self.send_message(mto=msg['from'].bare, mbody="%s %s %s %s" %(key, u"\u263A", title, url), mtype='groupchat')
 
     def gettitlefromhtml(self, url):
-        if url in self.urlcache:
-            return self.urlcache[url]['title']
 
         try:
             response = urllib2.urlopen(url)
@@ -154,6 +161,7 @@ if __name__ == '__main__':
             }
     xmpp.urlcache = {}
     xmpp.cachesize = 50
+    xmpp.deduptime = 1800
     logging.basicConfig(level=opts.loglevel, 
             format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
             datefmt='%m-%d %H:%M',
