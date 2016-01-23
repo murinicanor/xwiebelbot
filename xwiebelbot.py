@@ -147,7 +147,7 @@ if __name__ == '__main__':
     xmpp.debug = False
     xmpp.parsearray = {
             'Tails': { 
-                're': r'(^#| #|[tT]ails#|https://labs.riseup.net/code/issues/)([0-9]{3,5})', 
+                're': r'(^#|#|[tT]ails#|https://labs.riseup.net/code/issues/)([0-9]{3,5})', 
                 'url': 'https://labs.riseup.net/code/issues/' },
             'Debian': { 
                 're': '([dD]ebian#|https://bugs.debian.org/cgi-bin/bugreport.cgi\?bug=)([0-9]{3,6})', 
