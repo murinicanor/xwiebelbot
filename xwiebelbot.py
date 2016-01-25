@@ -43,7 +43,9 @@ class MUCBot(sleekxmpp.ClientXMPP):
 
     def session_start(self,event):
         self.send_presence()
-        self.plugin['xep_0045'].joinMUC(opts.channel, self.nick, wait=True)
+        for channel in opts.channel:
+            logging.debug('Joining channel ' + channel)
+            self.plugin['xep_0045'].joinMUC(channel, self.nick, wait=True)
 
     def groupchat_message(self, msg):
         if msg['mucnick'] != self.nick:
@@ -126,7 +128,7 @@ if __name__ == '__main__':
 
     optp.add_option('-j', '--jid', dest='jid', help='JID to use')
     optp.add_option('-p', '--pass', dest='password', help='password to use')
-    optp.add_option('-c', '--channel', dest='channel', help='Channel to join')
+    optp.add_option('-c', '--channel', action="append", dest='channel', help='Channel to join')
     optp.add_option('-n', '--nick', dest='nick', help='Nickname to use')
 
     opts, args = optp.parse_args()
