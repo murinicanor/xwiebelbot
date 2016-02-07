@@ -54,6 +54,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
 
     def parsemsg(self, msg):
         logging.debug('Parsing Groupchat Message.')
+        room = msg['from'].bare
         for key in self.parsearray.keys():
             logging.debug('Checking Groupchat Message for ' + key)
             for match in re.findall(self.parsearray[key]['re'], msg['body']):
@@ -61,17 +62,24 @@ class MUCBot(sleekxmpp.ClientXMPP):
                 url = self.parsearray[key]['url'] + match[1]
                 if url in self.urlcache:
                     logging.debug('URL is in cache')
-                    if self.urlcache[url]['timestamp'] + self.deduptime < time.time():
-                        logging.debug('URL timestamp %f is less than %f - %f', self.urlcache[url]['timestamp'], time.time(), self.deduptime)
+                    if room in self.urlcache[url]['rooms']:
+                        logging.debug(self.urlcache[url]['rooms'])
+                        if self.urlcache[url]['rooms'][room]['timestamp'] + self.deduptime < time.time():
+                            #logging.debug('URL timestamp %f is less than %f - %f', self.urlcache[url]['rooms'][room]['timestamp'], time.time(), self.deduptime)
+                            title = self.urlcache[url]['title']
+                            self.urlcache[url]['rooms'][room]['timestamp'] = time.time()
+                            self.send_message(mto=room, mbody="%s %s %s %s" %(key, u"\u263A", title, url), mtype='groupchat')
+                    else:
+                        logging.debug('Adding url with another room to urlcache.')
                         title = self.urlcache[url]['title']
-                        self.urlcache[url]['timestamp'] = time.time()
+                        self.urlcache[url]['rooms'][room] = {'timestamp': time.time() }
                         self.send_message(mto=msg['from'].bare, mbody="%s %s %s %s" %(key, u"\u263A", title, url), mtype='groupchat')
                 else:
                     logging.debug('URL not yet in cache')
-                    title = self.fixtitle(self.gettitlefromhtml(url))
-                    self.send_message(mto=msg['from'].bare, mbody="%s %s %s %s" %(key, u"\u263A", title, url), mtype='groupchat')
+                    title = self.fixtitle(self.gettitlefromhtml(url, room))
+                    self.send_message(mto=room, mbody="%s %s %s %s" %(key, u"\u263A", title, url), mtype='groupchat')
 
-    def gettitlefromhtml(self, url):
+    def gettitlefromhtml(self, url, room):
 
         try:
             response = urllib2.urlopen(url)
@@ -85,23 +93,26 @@ class MUCBot(sleekxmpp.ClientXMPP):
 
         b = BeautifulSoup.BeautifulSoup(data, convertEntities=BeautifulSoup.BeautifulSoup.HTML_ENTITIES)
         title = b.find('title').contents[0]
-        self.addtourlcache(url, title)
+        self.addtourlcache(url, title, room)
         return title
 
-    def addtourlcache(self, url, title):
+    def addtourlcache(self, url, title, room):
         if url not in self.urlcache:
             logging.info(url + ' is not in urlcache yet.')
             self.checklength()
-            self.urlcache[url] = {'title': title, 'timestamp': time.time() }
+            rooms = { room: {'timestamp': time.time() } }
+            self.urlcache[url] = {'title': title, 'rooms': rooms }
 
     def checklength(self):
         logging.debug('Checking the length of the urlcache dict.')
         if len(self.urlcache) >= self.cachesize:
             ts = time.time()
-            for key in self.urlcache:
-                if self.urlcache[key]['timestamp'] < ts:
-                    remkey = key
-                    ts = self.urlcache[key]['timestamp']
+            for url in self.urlcache:
+                for room in self.urlcache[url]['rooms']:
+                    avgts += self.urlcache[url]['rooms'][room]['timestamp']
+                if avgts < ts:
+                    remkey = url
+                    ts = avgts
             self.urlcache.pop(remkey)
 
     def fixtitle(self, title):
@@ -116,14 +127,14 @@ class MUCBot(sleekxmpp.ClientXMPP):
 if __name__ == '__main__':
 
     optp = OptionParser()
-    optp.add_option('-q', '--quiet', help='set logging to ERROR', 
-            action='store_const', dest='loglevel', 
+    optp.add_option('-q', '--quiet', help='set logging to ERROR',
+            action='store_const', dest='loglevel',
             const=logging.ERROR, default=logging.INFO)
-    optp.add_option('-d', '--debug', help='set logging to DEBUG', 
+    optp.add_option('-d', '--debug', help='set logging to DEBUG',
             action='store_const', dest='loglevel',
             const=logging.DEBUG, default=logging.INFO)
-    optp.add_option('-v', '--verbose', help='set logging to COMM', 
-            action='store_const', dest='loglevel', 
+    optp.add_option('-v', '--verbose', help='set logging to COMM',
+            action='store_const', dest='loglevel',
             const=5, default=logging.INFO)
 
     optp.add_option('-j', '--jid', dest='jid', help='JID to use')
