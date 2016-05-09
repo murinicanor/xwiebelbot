@@ -159,23 +159,23 @@ if __name__ == '__main__':
     xmpp.register_plugin('xep_0199') # XMPP Ping
     xmpp.debug = False
     xmpp.parsearray = {
-            'Tails': { 
-                're': r'(^#|#|[tT]ails#|https://labs.riseup.net/code/issues/)([0-9]{3,5})', 
+            'Tails': {
+                're': r'(^#| #|[tT]ails#|https://labs.riseup.net/code/issues/)([0-9]{3,5})',
                 'url': 'https://labs.riseup.net/code/issues/' },
-            'Debian': { 
-                're': '([dD]ebian#|https://bugs.debian.org/cgi-bin/bugreport.cgi\?bug=)([0-9]{3,6})', 
+            'Debian': {
+                're': '([dD]ebian#|https://bugs.debian.org/cgi-bin/bugreport.cgi\?bug=)([0-9]{3,6})',
                 'url': 'https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=' },
             'Tor': {
                 're': '([tT]or#|https://trac.torproject.org/projects/tor/ticket/)([0-9]{3,5})',
                 'url': 'https://trac.torproject.org/projects/tor/ticket/' },
             'Mat': {
-                're': r'([mM]at#)([0-9]{3,5})', 
+                're': r'([mM]at#)([0-9]{3,5})',
                 'url': 'https://labs.riseup.net/code/issues/' },
             }
     xmpp.urlcache = {}
     xmpp.cachesize = 50
     xmpp.deduptime = 1800
-    logging.basicConfig(level=opts.loglevel, 
+    logging.basicConfig(level=opts.loglevel,
             format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
             datefmt='%m-%d %H:%M',
             filename='xwiebelbot.log',
