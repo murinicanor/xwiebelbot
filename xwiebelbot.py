@@ -104,6 +104,7 @@ class MUCBot(sleekxmpp.ClientXMPP):
             self.urlcache[url] = {'title': title, 'rooms': rooms }
 
     def checklength(self):
+        avgts = 0
         logging.debug('Checking the length of the urlcache dict.')
         if len(self.urlcache) >= self.cachesize:
             ts = time.time()
